@@ -2,7 +2,7 @@
 
 This example demonstrates how to use Kafka Connect to write to a Iceberg table with Trino.
 https://substack.com/home/post/p-137733070?source=queue
-![](/Users/yhuang/Desktop/kafka-connect-iceberg-trino.png)
+![](kafka-connect-iceberg-trino.png)
 
 ## Starting the environment
 
