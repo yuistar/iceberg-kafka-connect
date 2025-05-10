@@ -146,7 +146,10 @@ Now we should get data persisted in Minio, also queryable via Trino!
 ![](minio2.png)
 ![](trino.png)
 
+Iceberg tables are tracked in postgres
+![](iceberg-rest.png)
 
 # Next steps
-## Connect to Grafana to visualize data
+#
+3Connect to Grafana to visualize data
 ## CDC into iceberg
