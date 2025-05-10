@@ -36,7 +36,6 @@ Trino looks for catalogs in `/etc/trino/catalog/`.
 
 There is a trino UI at `http://localhost:8080` the login is `admin`
 
-
 ### Iceberg Rest Catalog
 
 This is a rest catalog that is used to manage/store meta information about the iceberg tables.
@@ -44,8 +43,17 @@ it is backed by a `postgres` database.
 
 There are other alternatives, such as: `nessie`, `hivemetastore` etc
 
+### Kafka
 
-## Create the Iceberg table
+For simplicity, we use a 1 node cluster for the demo topic. Note that currently only one sink connector can be used if we would like to have guaranteed exactly-once control. 
+- Kafka broker (cluster)
+- Schema Registry + UI
+- Kafka Connect + UI
+
+
+
+## Setup the environment
+### Create the Iceberg table
 
 You can connect to trino in any way you like. Here is an example using the trino-cli.
 see https://trino.io/docs/current/client/cli.html
@@ -99,14 +107,9 @@ exit from the trino-cli by running `exit;`
 
 
 
-### Kafka
 
 Run this in a separate terminal, as it will run in the foreground,
 so we can easily look the Kafka Connect Logs
-
-- Kafka broker (cluster)
-- Schema Registry + UI
-- Kafka Connect + UI
 
 The Kafka Connect image is built from the `Dockerfile` to have the Iceberg Sink Connector binary
 
@@ -116,7 +119,7 @@ Create the topic `ethereum_mainnet_blocks` and start the producer. Note that the
 kafka-topics --bootstrap-server localhost:9092 --topic ethereum.mainnet.blocks --partitions 1 --replication-factor 1 --create
 ```
 
-## Adding the Kafka Connector
+### Adding the Kafka Connector
 Open the Kafka Connect UI on `http://localhost:8000` and click on `New` to add a new connector.
 
 You should see `IcebergSinkConnector` in the list of available connectors.
@@ -137,7 +140,7 @@ ethereum.mainnet.blocks
 
 ```
 
-### Generating the data
+## Produce the data to Kafka
 
 ```bash
 go run main.go
