@@ -1,6 +1,16 @@
 # Iceberg Kafka Connect Example
 
-This example demonstrates how to use Kafka Connect to write to a Iceberg table with Trino.
+## Introduction
+Apache Iceberg is the open table format that is high-performant for analytic tables. It supports SQL tables, while also supports 
+various data engines like Spark, Flink, Trino, Hive, Presto and etc. It is an improvement to the first generation of table format Apache Hive, 
+and is siblings with the contemporary Apache Hudi and Delta lake standards. Featuring:
+* ACID Transaction
+* Schema Evolution 
+* Hidden Partition 
+* Time Travel and Rollback
+
+This example demonstrates Iceberg rest service and Iceberg table with Trino. 
+Data is produced to Kafka, and sink into the Iceberg - Trino table via the Kafka connector. 
 https://substack.com/home/post/p-137733070?source=queue
 ![](kafka-connect-iceberg-trino.png)
 
@@ -8,15 +18,23 @@ https://substack.com/home/post/p-137733070?source=queue
 
 ### Minio
 
-This is a S3 compatible storage that is used to store the iceberg tables.
+This is a S3 compatible storage that is used as the object store to host the data and its metadata
 https://blog.min.io/a-developers-introduction-to-apache-iceberg-using-minio/
-It has a UI that can be accessed at `http://localhost:9000` it will look very similar to S3
+It has a UI that can be accessed at `http://localhost:9000` 
 
-the login credentials (configured in the `docker-compose.yml` file) are:
-
-username: `admin` | password: `password`
+the login credentials are configured in the `docker-compose.yml` file
 
 In the UI, in the user browser, you should see 1 bucket called `demo-iceberg`
+
+
+### Trino
+
+This will mount the `iceberg.properties` file into `/etc/trino/catalog/`  in the trino container.
+This file is a `catalog` config that configures the trino iceberg connector.
+
+Trino looks for catalogs in `/etc/trino/catalog/`.
+
+There is a trino UI at `http://localhost:8080` the login is `admin`
 
 
 ### Iceberg Rest Catalog
@@ -27,28 +45,6 @@ it is backed by a `postgres` database.
 There are other alternatives, such as: `nessie`, `hivemetastore` etc
 
 
-### Trino
-
-This will mount the `iceberg.properties` file into `/etc/trino/catalog/`  in the trino container.
-This file is a `catalog` config used to configure the trino iceberg connector. 
-
-Trino looks for catalogs in `/etc/trino/catalog/`.
-
-There is a trino UI at `http://localhost:8080` the login is `admin`
-
-
-### Kafka
-
-Run this in a separate terminal, as it will run in the foreground,
-so we can easily look the Kafka Connect Logs
-
-- Three Kafka brokers running in KRaft mode
-- Schema Registry + UI
-- Kafka Connect + UI
-
-The Kafka Connect image is built from the `Dockerfile` to have the Iceberg Sink Connector
-
-
 ## Create the Iceberg table
 
 You can connect to trino in any way you like. Here is an example using the trino-cli.
@@ -56,15 +52,30 @@ see https://trino.io/docs/current/client/cli.html
 
 ```bash
 trino http://localhost:8080
-# you can verify the connection by running `show catalogs;`
+```
+Verify the connection between trino and iceberg: 
+```sql
+trino > show catalogs;
+
+# verify that the icerberg catalog is present
+ Catalog 
+---------
+ iceberg 
+ jmx     
+ memory  
+ system  
+ tpcds   
+ tpch    
+(6 rows)
 ```
 
-first the db schema
+Then, let's create the db schema
 ```sql
 create schema iceberg.blockchain;
 ```
 
-then the table
+then the table, with definitions. 
+Note that the file format is default to `PARQUET` as configured in the trino-iceberg connector
 
 ```sql
 create table iceberg.blockchain.ethereum_mainnet_blocks(
@@ -81,17 +92,28 @@ WITH (
 ```
 you can check the table by running `show tables from iceberg.blockchain;`
 
+This should also create the initial metadata in the S3 bucket, in the path of db schema and table name
+![](minio.png)
+
 exit from the trino-cli by running `exit;`
 
-### Generating the data
 
-Create the topic `ethereum_mainnet_blocks` and start the producer
+
+### Kafka
+
+Run this in a separate terminal, as it will run in the foreground,
+so we can easily look the Kafka Connect Logs
+
+- Kafka broker (cluster)
+- Schema Registry + UI
+- Kafka Connect + UI
+
+The Kafka Connect image is built from the `Dockerfile` to have the Iceberg Sink Connector binary
+
+### Create the topic
+Create the topic `ethereum_mainnet_blocks` and start the producer. Note that the topic name has to be consistent with the table name in iceberg
 ```shell
-kafka-topics --bootstrap-server localhost:9092 --topic ethereum.mainnet.blocks --partitions 3 --replication-factor 1 --create
-```
-
-```bash
-go run main.go
+kafka-topics --bootstrap-server localhost:9092 --topic ethereum.mainnet.blocks --partitions 1 --replication-factor 1 --create
 ```
 
 ## Adding the Kafka Connector
@@ -100,3 +122,32 @@ Open the Kafka Connect UI on `http://localhost:8000` and click on `New` to add a
 You should see `IcebergSinkConnector` in the list of available connectors.
 
 paste in values from `connector.json` and click `Create`
+
+Note that The Kafka iceberg-sink-connector uses a control topic to guarantee exactly-once semantics. by default, it uses the topic called control-iceberg.
+```shell
+ % kafka-topics --bootstrap-server localhost:9092 --list                                                                             
+__consumer_offsets
+__transaction_state
+_connect_configs
+_connect_offset
+_connect_status
+_schemas
+control-iceberg
+ethereum.mainnet.blocks
+
+```
+
+### Generating the data
+
+```bash
+go run main.go
+```
+
+Now we should get data persisted in Minio, also queryable via Trino! 
+![](minio2.png)
+![](trino.png)
+
+
+# Next steps
+## Connect to Grafana to visualize data
+## CDC into iceberg
