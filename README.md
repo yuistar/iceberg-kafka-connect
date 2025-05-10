@@ -49,6 +49,7 @@ For simplicity, we use a 1 node cluster for the demo topic. Note that currently 
 - Kafka broker (cluster)
 - Schema Registry + UI
 - Kafka Connect + UI
+The Kafka Connect image is built from the `Dockerfile` to have the Iceberg Sink Connector binary
 
 
 
@@ -107,11 +108,6 @@ exit from the trino-cli by running `exit;`
 
 
 
-
-Run this in a separate terminal, as it will run in the foreground,
-so we can easily look the Kafka Connect Logs
-
-The Kafka Connect image is built from the `Dockerfile` to have the Iceberg Sink Connector binary
 
 ### Create the topic
 Create the topic `ethereum_mainnet_blocks` and start the producer. Note that the topic name has to be consistent with the table name in iceberg
