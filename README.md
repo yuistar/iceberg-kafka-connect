@@ -150,6 +150,5 @@ Iceberg tables are tracked in postgres
 ![](iceberg-rest.png)
 
 # Next steps
-#
-3Connect to Grafana to visualize data
-## CDC into iceberg
+###Connect to Grafana to visualize data
+### CDC into iceberg
