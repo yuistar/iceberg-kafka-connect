@@ -22,7 +22,7 @@ services:
 
   mc:
     depends_on:
-      - minio
+      - minio  
     image: minio/mc
     container_name: mc
     networks:
@@ -100,10 +100,10 @@ services:
       CATALOG_JDBC_USER: admin
       CATALOG_JDBC_PASSWORD: password
 
-  kafka-1:
+  kafka1:
     image: confluentinc/cp-kafka
-    container_name: kafka-1
-    hostname: kafka-1
+    container_name: kafka1
+    hostname: kafka1
     networks:
       iceberg_net:
     ports:
@@ -111,7 +111,7 @@ services:
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka-1:29092,EXTERNAL://localhost:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka1:29092,EXTERNAL://localhost:9092'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
@@ -119,8 +119,8 @@ services:
       KAFKA_JMX_PORT: 9101
       KAFKA_JMX_HOSTNAME: localhost
       KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-1:29093'
-      KAFKA_LISTENERS: 'INTERNAL://kafka-1:29092,CONTROLLER://kafka-1:29093,EXTERNAL://0.0.0.0:9092'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:29093'
+      KAFKA_LISTENERS: 'INTERNAL://kafka1:29092,CONTROLLER://kafka1:29093,EXTERNAL://0.0.0.0:9092'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
@@ -131,15 +131,15 @@ services:
     image: confluentinc/cp-schema-registry
     hostname: schema-registry
     restart: always
-    container_name: schema-registry
+    container_name: schema-registry1
     networks:
       iceberg_net:
     depends_on:
-      - kafka-1
+      - kafka1
     ports:
       - "8081:8081"
     environment:
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka-1:29092
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka1:29092
       SCHEMA_REGISTRY_HOST_NAME: schema-registry-1
       SCHEMA_REGISTRY_DEBUG: "true"
       SCHEMA_REGISTRY_LISTENERS: "http://schema-registry:8081"
@@ -153,10 +153,10 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - kafka-1
+      - kafka1
       - schema-registry
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: kafka-1:29092
+      CONNECT_BOOTSTRAP_SERVERS: kafka1:29092
       CONNECT_GROUP_ID: compose-connect-group
       CONNECT_CONFIG_STORAGE_TOPIC: _connect_configs
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
@@ -187,7 +187,7 @@ services:
     environment:
       CONNECT_URL: http://kafka-connect:8083
 
-  schema-registry-ui:
+  schema-registry-ui1:
     image: landoop/schema-registry-ui
     hostname: schema-registry
     restart: always
