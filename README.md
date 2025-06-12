@@ -11,7 +11,7 @@ and is siblings with the contemporary Apache Hudi and Delta lake standards. Feat
 
 This example demonstrates Iceberg table with data ingested from Kafka. 
 Data is produced to Kafka, and sink into the Object storage Minio via the Kafka connector in the Iceberg table format
-The metadata can be managed using iceberg-rest. The metadata and data can be queried via Analytics Query Engine like Trino
+The metadata can be managed using iceberg-rest. The tables can be managed via Analytics Query Engine like [Trino](https://trino.io/docs/current/connector/iceberg.html#sql-support)
 https://substack.com/home/post/p-137733070?source=queue
 ![](kafka-connect-iceberg-trino.png)
 
