@@ -9,8 +9,9 @@ and is siblings with the contemporary Apache Hudi and Delta lake standards. Feat
 * Hidden Partition 
 * Time Travel and Rollback
 
-This example demonstrates Iceberg rest service and Iceberg table with Trino. 
-Data is produced to Kafka, and sink into the Iceberg - Trino table via the Kafka connector. 
+This example demonstrates Iceberg table with data ingested from Kafka. 
+Data is produced to Kafka, and sink into the Object storage Minio via the Kafka connector in the Iceberg table format
+The metadata can be managed using iceberg-rest. The metadata and data can be queried via Analytics Query Engine like Trino
 https://substack.com/home/post/p-137733070?source=queue
 ![](kafka-connect-iceberg-trino.png)
 
@@ -146,9 +147,10 @@ Now we should get data persisted in Minio, also queryable via Trino!
 ![](minio2.png)
 ![](trino.png)
 
-Iceberg tables are tracked in postgres
+Iceberg-rest is backed by postgres, or sqlite. It can also be queries from pyiceberg
+![](pyiceberg.png)
 ![](iceberg-rest.png)
 
 # Next steps
-###Connect to Grafana to visualize data
+### Connect to Grafana to visualize data
 ### CDC into iceberg
